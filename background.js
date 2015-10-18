@@ -6,68 +6,38 @@ if (!chrome.cookies) {
 }
 
 var url = 'https://youhui.95516.com/wm-non-biz-web/restlet/bill/billStatus?billId=D00000000046940&brandId=70557&billTp=1&cityCd=210200&version=1.0&source=1';
-
+var isActivated = false;
+var isInitialized=false;
 
 /*
   Displays a notification with the current time. Requires "notifications"
   permission in the manifest file (or calling
   "Notification.requestPermission" beforehand).
 */
-function show(body,id) {
+function show(left) {
 
   var time = /(..)(:..)/.exec(new Date());     // The prettyprinted time.
   var hour = time[1] % 12 || 12;               // The prettyprinted hour.
   var period = time[1] < 12 ? 'a.m.' : 'p.m.'; // The period of the day.
-  // new Notification(hour + time[2] + ' ' + period, {
-  //   icon: '48.png',
-  //   body: body
-  // });
+
   var opt = {
-    type: "list",
+    type: "basic",
     title: hour + time[2] + ' ' + period,
-    message: "Primary message to display",
+    message: "沃尔玛免单开始了 还剩:" + left,
     iconUrl: "48.png",
-    items: body,
-    buttons: [{title:'去看看'}]
   };
-  chrome.notifications.create((new Date()).valueOf()+':'+id, opt, function(notificationId){
+  chrome.notifications.create((new Date()).valueOf()+"", opt, function(notificationId){
     console.log('show notification');
   });
 }
 
-function showNotice(value,date){
-  var body = [];
-        body.push({title:"ID", message:value['labels'][1]});
-        body.push({title:"Summary", message:value['labels'][2]});
-        body.push({title:"Priority & Severity", message:value['labels'][5] + ' | '+value['labels'][6]});
-
-        date = new Date(date).toLocaleString();
-        body.push({title:"Modified Date", message:date});
-        show(body, value['labels'][1]);
-}
-
 function parseResultList(result) {
-    console.log(result);
-    // var lastDate=0;
-    // items.forEach(function(value, index) {
-    //   var date = parseInt(value['labels'][7]);
-    //   if (localStorage.lastItemDate == 1) {
-    //     if (date > lastDate) {
-    //       lastDate = date;
-    //     }
-    //     showNotice(value,date);
-
-    //   } else if(date > localStorage.lastItemDate) {
-    //     localStorage.lastItemDate = date;
-    //     showNotice(value,date);
-    //   }
-
-
-    // });
-    // if (localStorage.lastItemDate == 1) {
-    //   localStorage.lastItemDate = lastDate;
-    // }
-    
+    // console.log(result);
+    var leftNum = result.data.leftNum;
+    // show(leftNum);
+    if (leftNum != "0") {
+      show(leftNum);
+    }    
 }
 
 function getData() {
@@ -81,8 +51,8 @@ function getData() {
     }
   }
   xmlhttp.open("GET",url,true);
-  xmlhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded; charset=UTF-8");
-  xmlhttp.setRequestHeader("accept","text/json");
+  // xmlhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded; charset=UTF-8");
+  xmlhttp.setRequestHeader("accept","application/json");
   xmlhttp.send();
 }
 
