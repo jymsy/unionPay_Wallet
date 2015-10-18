@@ -5,24 +5,9 @@ if (!chrome.cookies) {
   chrome.cookies = chrome.experimental.cookies;
 }
 
-var login_url = 'https://swgjazz.ibm.com:8017/jazz/service/com.ibm.team.repository.service.internal.webuiInitializer.IWebUIInitializerRestService/j_security_check';
-var url = 'https://swgjazz.ibm.com:8017/jazz/service/com.ibm.team.workitem.common.internal.rest.IQueryRestService/getResultSet';
-var post_field = 'startIndex=0&maxResults=5&filterAttribute=&filterValue=&itemId=_Cz0GAKtmEeSDqq9AqL5DVg&projectAreaItemId=_TpqD8FSeEeCF6b5qT5IShg&jsonQuery={"name":"Copy of 2.2 Unresolved Defects - Found in R3","description":"","itemId":"_Cz0GAKtmEeSDqq9AqL5DVg","csvExportLink":"/jazz/resource/itemOid/com.ibm.team.workitem.query.QueryDescriptor/_Cz0GAKtmEeSDqq9AqL5DVg?_mediaType=text/csv","htmlExportLink":"/jazz/resource/itemOid/com.ibm.team.workitem.query.QueryDescriptor/_Cz0GAKtmEeSDqq9AqL5DVg?_mediaType=text/html","projectAreaItemId":"_TpqD8FSeEeCF6b5qT5IShg"}';
-var refer = 'https://swgjazz.ibm.com:8017/jazz/web/projects/Social%20CRM%20-%20Sales%20Force%20Automation';
-var isActivated = false;
-var isInitialized=false;
-var item_url = 'https://swgjazz.ibm.com:8017/jazz/web/projects/Social%20CRM%20-%20Sales%20Force%20Automation#action=com.ibm.team.workitem.viewWorkItem&id=';
+var url = 'https://youhui.95516.com/wm-non-biz-web/restlet/bill/billStatus?billId=D00000000046940&brandId=70557&billTp=1&cityCd=210200&version=1.0&source=1';
 
-chrome.webRequest.onBeforeSendHeaders.addListener(
-    function(details) {
-        if (details.type === 'xmlhttprequest') {
-          details.requestHeaders.push({ name: 'Referer', value: refer});
-          return { requestHeaders: details.requestHeaders };
-        }
-    },
-    {urls: ['https://swgjazz.ibm.com:8017/*']},
-    ["blocking", "requestHeaders"]
-);
+
 /*
   Displays a notification with the current time. Requires "notifications"
   permission in the manifest file (or calling
@@ -62,34 +47,30 @@ function showNotice(value,date){
 }
 
 function parseResultList(result) {
-    var items = result['soapenv:Body']['response']['returnValue']['value']['rows'];
-    console.log(items);
-    var lastDate=0;
-    items.forEach(function(value, index) {
-      var date = parseInt(value['labels'][7]);
-      if (localStorage.lastItemDate == 1) {
-        if (date > lastDate) {
-          lastDate = date;
-        }
-        showNotice(value,date);
+    console.log(result);
+    // var lastDate=0;
+    // items.forEach(function(value, index) {
+    //   var date = parseInt(value['labels'][7]);
+    //   if (localStorage.lastItemDate == 1) {
+    //     if (date > lastDate) {
+    //       lastDate = date;
+    //     }
+    //     showNotice(value,date);
 
-      } else if(date > localStorage.lastItemDate) {
-        localStorage.lastItemDate = date;
-        showNotice(value,date);
-      }
+    //   } else if(date > localStorage.lastItemDate) {
+    //     localStorage.lastItemDate = date;
+    //     showNotice(value,date);
+    //   }
 
 
-    });
-    if (localStorage.lastItemDate == 1) {
-      localStorage.lastItemDate = lastDate;
-    }
+    // });
+    // if (localStorage.lastItemDate == 1) {
+    //   localStorage.lastItemDate = lastDate;
+    // }
     
 }
 
-function getRTCList(cookies) {
-  if (!localStorage.lastItemDate) {
-    localStorage.lastItemDate = 1;
-  }
+function getData() {
 
   var xmlhttp = new XMLHttpRequest();
   var result;
@@ -99,46 +80,27 @@ function getRTCList(cookies) {
       parseResultList(JSON.parse(xmlhttp.responseText));
     }
   }
-  xmlhttp.open("POST",url,true);
+  xmlhttp.open("GET",url,true);
   xmlhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded; charset=UTF-8");
   xmlhttp.setRequestHeader("accept","text/json");
-  xmlhttp.send(post_field);
+  xmlhttp.send();
 }
 
 function onload() {
-  // Conditionally initialize the options.
-  // if (!localStorage.isInitialized) {
-  //   localStorage.isActivated = true;   // The display activation.
-  //   localStorage.frequency = 1;        // The display frequency, in minutes.
-  //   localStorage.isInitialized = true; // The option initialization.
-  // }
-
-  chrome.cookies.getAll({domain:'swgjazz.ibm.com'}, function(cookies) {
-    // startListening();
-    console.log(cookies);
-    // Test for notification support.
     if (window.Notification) {
       // While activated, show notifications at the display frequency.
-      if (isActivated) { getRTCList(cookies); }
 
       var interval = 0; // The display interval, in minutes.
 
       setInterval(function() {
-        interval++;console.log(interval);
+        interval++;
+        console.log(interval);
         if (isActivated) {
-            getRTCList(cookies);
+            getData();
         }
-      }, 60000);
-    }    
-  });
-  // show('error!login rtc error! please login rtc again');
+      }, 10000);
+    }  
 }
-
-
-// chrome.browserAction.onClicked.addListener(function(tab) {
-//   console.log('onload');
-//   onload();
-// });
 
 chrome.notifications.onClicked.addListener(function(notificationId){
   chrome.notifications.clear(notificationId);
@@ -146,8 +108,6 @@ chrome.notifications.onClicked.addListener(function(notificationId){
 
 chrome.notifications.onButtonClicked.addListener(function(notificationId,buttonIndex){
   chrome.notifications.clear(notificationId);
-  var id = /.*:(.*)/.exec(notificationId)[1];
-  chrome.tabs.create({url:item_url+id});
 });
 
 chrome.extension.onRequest.addListener(
